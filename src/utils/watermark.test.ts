@@ -88,12 +88,23 @@ describe('Watermark Utility Calculations', () => {
       expect(pos[1].x).toBe(850);
     });
 
-    it('validates invalid spacing and uses default 5000', () => {
+    it('calculates repeated mode positions with custom vertical spacing', () => {
+      // Height 8000, spacing 2000 => 4 placements
+      const pos = calculateRepeatPositions('repeated', 'center', 2000, W, 8000, itemW, itemH);
+      expect(pos.length).toBe(4);
+      expect(pos[1].y - pos[0].y).toBe(2000);
+      expect(pos[2].y - pos[1].y).toBe(2000);
+    });
+
+    it('validates invalid spacing (0, negative, NaN) and uses default 5000', () => {
       const posZero = calculateRepeatPositions('repeated', 'center', 0, W, H, itemW, itemH);
       expect(posZero.length).toBe(2);
 
       const posNeg = calculateRepeatPositions('repeated', 'center', -100, W, H, itemW, itemH);
       expect(posNeg.length).toBe(2);
+
+      const posNaN = calculateRepeatPositions('repeated', 'center', NaN, W, H, itemW, itemH);
+      expect(posNaN.length).toBe(2);
     });
   });
 
