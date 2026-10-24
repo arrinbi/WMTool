@@ -11,20 +11,20 @@ import { processWatermarkImage } from './utils/watermark';
 import { Droplet, Layers } from 'lucide-react';
 
 const DEFAULT_OPTIONS: WatermarkOptions = {
-  mode: 'single',
+  mode: 'repeated',
   repeat: {
-    position: 'center',
-    spacing: 5000,
+    position: 'alternating',
+    spacing: 3000,
   },
   text: {
-    enabled: true,
+    enabled: false,
     text: 'WATERMARK',
     fontFamily: 'sans-serif',
     fontSize: 28,
     fontSizeUnit: 'px',
     fontWeight: 'bold',
     color: '#ffffff',
-    opacity: 0.7,
+    opacity: 0.5,
     rotation: -30,
     position: 'center',
     customX: 50,
@@ -39,12 +39,12 @@ const DEFAULT_OPTIONS: WatermarkOptions = {
     shadowOffsetY: 2,
   },
   logo: {
-    enabled: false,
+    enabled: true,
     imageSrc: null,
     imageElement: null,
     imageFileName: null,
-    scale: 25,
-    opacity: 0.8,
+    scale: 50,
+    opacity: 0.5,
     rotation: 0,
     position: 'bottom-right',
     customX: 90,
@@ -55,7 +55,7 @@ const DEFAULT_OPTIONS: WatermarkOptions = {
     spacingY: 100,
   },
   export: {
-    format: 'png',
+    format: 'jpeg',
     quality: 0.9,
     filenameSuffix: '_wm',
   },

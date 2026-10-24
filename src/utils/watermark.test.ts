@@ -96,15 +96,15 @@ describe('Watermark Utility Calculations', () => {
       expect(pos[2].y - pos[1].y).toBe(2000);
     });
 
-    it('validates invalid spacing (0, negative, NaN) and uses default 5000', () => {
+    it('validates invalid spacing (0, negative, NaN) and uses default 3000', () => {
       const posZero = calculateRepeatPositions('repeated', 'center', 0, W, H, itemW, itemH);
-      expect(posZero.length).toBe(2);
+      expect(posZero.length).toBe(3); // 10000 / 3000 = 3
 
       const posNeg = calculateRepeatPositions('repeated', 'center', -100, W, H, itemW, itemH);
-      expect(posNeg.length).toBe(2);
+      expect(posNeg.length).toBe(3);
 
       const posNaN = calculateRepeatPositions('repeated', 'center', NaN, W, H, itemW, itemH);
-      expect(posNaN.length).toBe(2);
+      expect(posNaN.length).toBe(3);
     });
   });
 

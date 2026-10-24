@@ -152,7 +152,7 @@ export function calculateRepeatPositions(
   }
 
   // mode === 'repeated'
-  const validSpacing = Math.max(1, isNaN(spacing) || spacing <= 0 ? 5000 : spacing);
+  const validSpacing = Math.max(1, isNaN(spacing) || spacing <= 0 ? 3000 : spacing);
   const count = Math.max(1, Math.floor(canvasHeight / validSpacing));
   const startY = (canvasHeight - (count - 1) * validSpacing) / 2;
 
@@ -246,7 +246,7 @@ export function renderTextWatermark(
       drawSingleTextAt(tile.x, tile.y);
     }
   } else {
-    const repeatSettings = options.repeat || { position: 'center', spacing: 5000 };
+    const repeatSettings = options.repeat || { position: 'center', spacing: 3000 };
     const positions = calculateRepeatPositions(
       mode,
       repeatSettings.position,
@@ -307,7 +307,7 @@ export function renderLogoWatermark(
       drawSingleLogoAt(tile.x, tile.y);
     }
   } else {
-    const repeatSettings = options.repeat || { position: 'center', spacing: 5000 };
+    const repeatSettings = options.repeat || { position: 'center', spacing: 3000 };
     const positions = calculateRepeatPositions(
       mode,
       repeatSettings.position,

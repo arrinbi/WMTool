@@ -153,7 +153,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       ...options,
                       repeat: {
                         position: e.target.value as RepeatPosition,
-                        spacing: options.repeat?.spacing ?? 5000,
+                        spacing: options.repeat?.spacing ?? 3000,
                       },
                     })
                   }
@@ -174,9 +174,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     type="number"
                     min="1"
                     value={
-                      options.repeat?.spacing === 0 || isNaN(options.repeat?.spacing ?? 5000)
+                      options.repeat?.spacing === 0 || isNaN(options.repeat?.spacing ?? 3000)
                         ? ''
-                        : options.repeat?.spacing ?? 5000
+                        : options.repeat?.spacing ?? 3000
                     }
                     onChange={(e) => {
                       const raw = e.target.value;
@@ -205,7 +205,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                           ...options,
                           repeat: {
                             position: options.repeat?.position || 'center',
-                            spacing: 5000,
+                            spacing: 3000,
                           },
                         });
                       }
