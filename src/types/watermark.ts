@@ -57,7 +57,7 @@ export interface TilingSettings {
 
 export interface RepeatSettings {
   position: RepeatPosition;
-  spacing: number; // px vertical distance between placements (default 5000)
+  spacing: number; // px vertical distance between placements (default 3000)
 }
 
 export interface ExportSettings {
