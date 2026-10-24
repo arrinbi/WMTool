@@ -12,6 +12,10 @@ import { Droplet, Layers } from 'lucide-react';
 
 const DEFAULT_OPTIONS: WatermarkOptions = {
   mode: 'single',
+  repeat: {
+    position: 'center',
+    spacing: 5000,
+  },
   text: {
     enabled: true,
     text: 'WATERMARK',

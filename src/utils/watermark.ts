@@ -1,6 +1,7 @@
 import {
   WatermarkOptions,
   SinglePosition,
+  RepeatPosition,
   TextWatermarkSettings,
 } from '../types/watermark';
 
@@ -119,6 +120,65 @@ export function calculateTileGrid(
 }
 
 /**
+ * Calculates (x, y) coordinates for single or repeated watermark placements.
+ */
+export function calculateRepeatPositions(
+  mode: 'single' | 'repeated',
+  position: RepeatPosition,
+  spacing: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  itemWidth: number,
+  _itemHeight: number
+): Array<{ x: number; y: number }> {
+  const marginX = Math.max(20, canvasWidth * 0.05);
+
+  const getXForPos = (pos: 'left' | 'center' | 'right') => {
+    if (pos === 'left') return marginX + itemWidth / 2;
+    if (pos === 'right') return canvasWidth - marginX - itemWidth / 2;
+    return canvasWidth / 2;
+  };
+
+  if (mode === 'single') {
+    let posKey: 'left' | 'center' | 'right' = 'center';
+    if (position === 'left' || position === 'alternating') {
+      posKey = 'left';
+    } else if (position === 'right') {
+      posKey = 'right';
+    } else if (position === 'center') {
+      posKey = 'center';
+    }
+    return [{ x: getXForPos(posKey), y: canvasHeight / 2 }];
+  }
+
+  // mode === 'repeated'
+  const validSpacing = Math.max(1, isNaN(spacing) || spacing <= 0 ? 5000 : spacing);
+  const count = Math.max(1, Math.floor(canvasHeight / validSpacing));
+  const startY = (canvasHeight - (count - 1) * validSpacing) / 2;
+
+  const positions: Array<{ x: number; y: number }> = [];
+
+  for (let i = 0; i < count; i++) {
+    const y = startY + i * validSpacing;
+    let posKey: 'left' | 'center' | 'right' = 'center';
+
+    if (position === 'left') {
+      posKey = 'left';
+    } else if (position === 'right') {
+      posKey = 'right';
+    } else if (position === 'center') {
+      posKey = 'center';
+    } else if (position === 'alternating') {
+      posKey = i % 2 === 0 ? 'left' : 'right';
+    }
+
+    positions.push({ x: getXForPos(posKey), y });
+  }
+
+  return positions;
+}
+
+/**
  * Renders text watermark on a given canvas 2D context.
  */
 export function renderTextWatermark(
@@ -173,19 +233,7 @@ export function renderTextWatermark(
     ctx.restore();
   };
 
-  if (mode === 'single') {
-    const pos = calculateSinglePosition(
-      textSettings.position,
-      textSettings.customX,
-      textSettings.customY,
-      canvasWidth,
-      canvasHeight,
-      textWidth,
-      textHeight
-    );
-    drawSingleTextAt(pos.x, pos.y);
-  } else {
-    // Tiled mode
+  if (mode === 'tiled') {
     const tiles = calculateTileGrid(
       canvasWidth,
       canvasHeight,
@@ -196,6 +244,20 @@ export function renderTextWatermark(
     );
     for (const tile of tiles) {
       drawSingleTextAt(tile.x, tile.y);
+    }
+  } else {
+    const repeatSettings = options.repeat || { position: 'center', spacing: 5000 };
+    const positions = calculateRepeatPositions(
+      mode,
+      repeatSettings.position,
+      repeatSettings.spacing,
+      canvasWidth,
+      canvasHeight,
+      textWidth,
+      textHeight
+    );
+    for (const pos of positions) {
+      drawSingleTextAt(pos.x, pos.y);
     }
   }
 
@@ -232,19 +294,7 @@ export function renderLogoWatermark(
     ctx.restore();
   };
 
-  if (mode === 'single') {
-    const pos = calculateSinglePosition(
-      logoSettings.position,
-      logoSettings.customX,
-      logoSettings.customY,
-      canvasWidth,
-      canvasHeight,
-      targetWidth,
-      targetHeight
-    );
-    drawSingleLogoAt(pos.x, pos.y);
-  } else {
-    // Tiled mode
+  if (mode === 'tiled') {
     const tiles = calculateTileGrid(
       canvasWidth,
       canvasHeight,
@@ -255,6 +305,20 @@ export function renderLogoWatermark(
     );
     for (const tile of tiles) {
       drawSingleLogoAt(tile.x, tile.y);
+    }
+  } else {
+    const repeatSettings = options.repeat || { position: 'center', spacing: 5000 };
+    const positions = calculateRepeatPositions(
+      mode,
+      repeatSettings.position,
+      repeatSettings.spacing,
+      canvasWidth,
+      canvasHeight,
+      targetWidth,
+      targetHeight
+    );
+    for (const pos of positions) {
+      drawSingleLogoAt(pos.x, pos.y);
     }
   }
 
