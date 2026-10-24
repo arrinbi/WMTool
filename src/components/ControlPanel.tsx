@@ -173,17 +173,42 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   <input
                     type="number"
                     min="1"
-                    value={options.repeat?.spacing ?? 5000}
+                    value={
+                      options.repeat?.spacing === 0 || isNaN(options.repeat?.spacing ?? 5000)
+                        ? ''
+                        : options.repeat?.spacing ?? 5000
+                    }
                     onChange={(e) => {
-                      const val = Number(e.target.value);
-                      const validVal = isNaN(val) || val <= 0 ? 1 : val;
+                      const raw = e.target.value;
+                      if (raw === '') {
+                        onChange({
+                          ...options,
+                          repeat: {
+                            position: options.repeat?.position || 'center',
+                            spacing: 0,
+                          },
+                        });
+                        return;
+                      }
+                      const val = parseInt(raw, 10);
                       onChange({
                         ...options,
                         repeat: {
                           position: options.repeat?.position || 'center',
-                          spacing: validVal,
+                          spacing: isNaN(val) ? 0 : val,
                         },
                       });
+                    }}
+                    onBlur={() => {
+                      if (!options.repeat?.spacing || options.repeat.spacing <= 0) {
+                        onChange({
+                          ...options,
+                          repeat: {
+                            position: options.repeat?.position || 'center',
+                            spacing: 5000,
+                          },
+                        });
+                      }
                     }}
                     className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
                   />
