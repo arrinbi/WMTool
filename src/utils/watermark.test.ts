@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   calculateSinglePosition,
+  calculateRepeatPositions,
   getEffectiveFontSize,
   calculateTileGrid,
   generateOutputFilename,
@@ -42,6 +43,57 @@ describe('Watermark Utility Calculations', () => {
       const textSettings = { fontSize: 5, fontSizeUnit: '%' } as any;
       // min dim = 800, 5% of 800 = 40
       expect(getEffectiveFontSize(textSettings, 1000, 800)).toBe(40);
+    });
+  });
+
+  describe('calculateRepeatPositions', () => {
+    const W = 1000;
+    const H = 10000;
+    const itemW = 200;
+    const itemH = 100;
+    const marginX = Math.max(20, W * 0.05); // 50
+
+    it('calculates single mode positions correctly', () => {
+      const posLeft = calculateRepeatPositions('single', 'left', 5000, W, H, itemW, itemH);
+      expect(posLeft.length).toBe(1);
+      expect(posLeft[0]).toEqual({ x: marginX + itemW / 2, y: H / 2 }); // 50 + 100 = 150, 5000
+
+      const posCenter = calculateRepeatPositions('single', 'center', 5000, W, H, itemW, itemH);
+      expect(posCenter[0]).toEqual({ x: W / 2, y: H / 2 });
+
+      const posRight = calculateRepeatPositions('single', 'right', 5000, W, H, itemW, itemH);
+      expect(posRight[0]).toEqual({ x: W - marginX - itemW / 2, y: H / 2 });
+
+      // Alternating in single mode places 1 watermark on the left
+      const posAlt = calculateRepeatPositions('single', 'alternating', 5000, W, H, itemW, itemH);
+      expect(posAlt.length).toBe(1);
+      expect(posAlt[0]).toEqual({ x: marginX + itemW / 2, y: H / 2 });
+    });
+
+    it('calculates repeated mode positions with specified vertical spacing', () => {
+      // Height 10000, spacing 5000 => 2 placements (count = 10000/5000 = 2)
+      // startY = (10000 - 1*5000)/2 = 2500. Placements at y=2500 and y=7500.
+      const pos = calculateRepeatPositions('repeated', 'center', 5000, W, H, itemW, itemH);
+      expect(pos.length).toBe(2);
+      expect(pos[0]).toEqual({ x: 500, y: 2500 });
+      expect(pos[1]).toEqual({ x: 500, y: 7500 });
+    });
+
+    it('handles alternating positions in repeated mode', () => {
+      const pos = calculateRepeatPositions('repeated', 'alternating', 5000, W, H, itemW, itemH);
+      expect(pos.length).toBe(2);
+      // Index 0 -> Left (x = 150)
+      expect(pos[0].x).toBe(150);
+      // Index 1 -> Right (x = 1000 - 50 - 100 = 850)
+      expect(pos[1].x).toBe(850);
+    });
+
+    it('validates invalid spacing and uses default 5000', () => {
+      const posZero = calculateRepeatPositions('repeated', 'center', 0, W, H, itemW, itemH);
+      expect(posZero.length).toBe(2);
+
+      const posNeg = calculateRepeatPositions('repeated', 'center', -100, W, H, itemW, itemH);
+      expect(posNeg.length).toBe(2);
     });
   });
 

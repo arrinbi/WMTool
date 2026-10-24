@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import {
   WatermarkOptions,
   SinglePosition,
+  RepeatPosition,
   TextWatermarkSettings,
   LogoWatermarkSettings,
   ExportSettings,
@@ -9,8 +10,8 @@ import {
 import {
   Type,
   Image as ImageIcon,
-  Grid,
   Square,
+  Repeat,
   Sparkles,
   Download,
   Upload,
@@ -30,6 +31,13 @@ const FONT_FAMILIES = [
   { label: 'Monospace (Courier New)', value: 'monospace' },
   { label: 'Impact / Bold Display', value: 'Impact, sans-serif' },
   { label: 'Cursive / Script', value: 'cursive' },
+];
+
+const REPEAT_POSITIONS: Array<{ label: string; value: RepeatPosition }> = [
+  { label: 'Left', value: 'left' },
+  { label: 'Center', value: 'center' },
+  { label: 'Right', value: 'right' },
+  { label: 'Left - Right (Alternating)', value: 'alternating' },
 ];
 
 const POSITIONS: Array<{ label: string; value: SinglePosition }> = [
@@ -107,7 +115,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         {/* 1. Mode Selection */}
         <div className="space-y-2">
           <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-            Watermark Layout Mode
+            Watermark Mode
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -122,17 +130,67 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               Single Watermark
             </button>
             <button
-              onClick={() => onChange({ ...options, mode: 'tiled' })}
+              onClick={() => onChange({ ...options, mode: 'repeated' })}
               className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border font-medium text-xs transition-all ${
-                options.mode === 'tiled'
+                options.mode === 'repeated'
                   ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
                   : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
               }`}
             >
-              <Grid className="w-4 h-4" />
-              Repeated Tiled
+              <Repeat className="w-4 h-4" />
+              Repeated Watermark
             </button>
           </div>
+
+          {(options.mode === 'single' || options.mode === 'repeated') && (
+            <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/60 space-y-3 mt-2">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Watermark Position</label>
+                <select
+                  value={options.repeat?.position || 'center'}
+                  onChange={(e) =>
+                    onChange({
+                      ...options,
+                      repeat: {
+                        position: e.target.value as RepeatPosition,
+                        spacing: options.repeat?.spacing ?? 5000,
+                      },
+                    })
+                  }
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                >
+                  {REPEAT_POSITIONS.map((pos) => (
+                    <option key={pos.value} value={pos.value}>
+                      {pos.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {options.mode === 'repeated' && (
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Watermark Spacing (px)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={options.repeat?.spacing ?? 5000}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      const validVal = isNaN(val) || val <= 0 ? 1 : val;
+                      onChange({
+                        ...options,
+                        repeat: {
+                          position: options.repeat?.position || 'center',
+                          spacing: validVal,
+                        },
+                      });
+                    }}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {options.mode === 'tiled' && (
             <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/60 space-y-3 mt-2">

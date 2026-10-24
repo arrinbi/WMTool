@@ -1,4 +1,6 @@
-export type WatermarkMode = 'single' | 'tiled';
+export type WatermarkMode = 'single' | 'repeated' | 'tiled';
+
+export type RepeatPosition = 'left' | 'center' | 'right' | 'alternating';
 
 export type SinglePosition =
   | 'center'
@@ -53,6 +55,11 @@ export interface TilingSettings {
   spacingY: number; // px gap between watermarks
 }
 
+export interface RepeatSettings {
+  position: RepeatPosition;
+  spacing: number; // px vertical distance between placements (default 5000)
+}
+
 export interface ExportSettings {
   format: 'png' | 'jpeg' | 'webp';
   quality: number; // 0.1 to 1.0
@@ -63,6 +70,7 @@ export interface WatermarkOptions {
   mode: WatermarkMode;
   text: TextWatermarkSettings;
   logo: LogoWatermarkSettings;
+  repeat?: RepeatSettings;
   tiling: TilingSettings;
   export: ExportSettings;
 }
