@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Upload, Image as ImageIcon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 interface FileUploaderProps {
   onFilesSelected: (files: File[]) => void;
@@ -7,6 +8,8 @@ interface FileUploaderProps {
 }
 
 export const FileUploader: React.FC<FileUploaderProps> = ({ onFilesSelected, compact }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,7 +82,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ onFilesSelected, com
       className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
         isDragging
           ? 'border-indigo-500 bg-indigo-500/10'
-          : 'border-gray-700 bg-gray-800/50 hover:border-indigo-400 hover:bg-gray-800'
+          : isDark
+          ? 'border-gray-700 bg-gray-800/50 hover:border-indigo-400 hover:bg-gray-800'
+          : 'border-slate-300 bg-white hover:border-indigo-500 hover:bg-slate-50 shadow-sm'
       }`}
     >
       <input
@@ -91,14 +96,18 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ onFilesSelected, com
         className="hidden"
       />
       <div className="flex flex-col items-center gap-3">
-        <div className="p-4 bg-gray-700/50 rounded-full text-indigo-400">
+        <div
+          className={`p-4 rounded-full ${
+            isDark ? 'bg-gray-700/50 text-indigo-400' : 'bg-indigo-50 text-indigo-600'
+          }`}
+        >
           <ImageIcon className="w-8 h-8" />
         </div>
         <div>
-          <p className="text-base font-semibold text-gray-200">
-            Drag & drop images here, or <span className="text-indigo-400 underline">browse</span>
+          <p className={`text-base font-semibold ${isDark ? 'text-gray-200' : 'text-slate-800'}`}>
+            Drag & drop images here, or <span className="text-indigo-500 underline">browse</span>
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
             Supports PNG, JPEG, WebP, GIF, BMP and other common browser image formats.
           </p>
         </div>
