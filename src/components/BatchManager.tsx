@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import { Download, Trash2, CheckCircle2, AlertCircle, Loader2, Archive } from 'lucide-react';
 import { ProcessedImageItem, ExportSettings } from '../types/watermark';
 import { generateOutputFilename } from '../utils/watermark';
+import { useTheme } from '../context/ThemeContext';
 
 interface BatchManagerProps {
   items: ProcessedImageItem[];
@@ -21,6 +22,9 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
   onRemoveItem,
   onClearAll,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   if (items.length === 0) return null;
 
   const completedItems = items.filter((item) => item.status === 'done' && item.processedBlob);
@@ -69,13 +73,19 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-4">
+    <div
+      className={`rounded-xl border p-4 space-y-4 transition-colors ${
+        isDark
+          ? 'bg-gray-900 border-gray-800 text-gray-200 shadow-xl'
+          : 'bg-white border-slate-200 text-slate-800 shadow-md'
+      }`}
+    >
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-gray-200">
+          <h3 className={`text-sm font-semibold ${isDark ? 'text-gray-200' : 'text-slate-800'}`}>
             Image Queue ({items.length})
           </h3>
-          <p className="text-xs text-gray-400">
+          <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
             {completedItems.length} of {items.length} processed
           </p>
         </div>
@@ -93,10 +103,14 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
 
           <button
             onClick={onClearAll}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs rounded-lg transition-colors cursor-pointer border border-gray-700"
+            className={`flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-lg transition-colors cursor-pointer border ${
+              isDark
+                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+            }`}
             title="Clear all images"
           >
-            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+            <Trash2 className="w-3.5 h-3.5 text-red-500" />
             Clear
           </button>
         </div>
@@ -112,11 +126,17 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
               onClick={() => onSelectItem(item.id)}
               className={`relative group rounded-lg overflow-hidden border cursor-pointer transition-all ${
                 isSelected
-                  ? 'border-indigo-500 ring-2 ring-indigo-500/40 bg-gray-800'
-                  : 'border-gray-800 bg-gray-800/40 hover:border-gray-700'
+                  ? 'border-indigo-500 ring-2 ring-indigo-500/40'
+                  : isDark
+                  ? 'border-gray-800 bg-gray-800/40 hover:border-gray-700'
+                  : 'border-slate-200 bg-slate-50 hover:border-slate-300'
               }`}
             >
-              <div className="aspect-square relative bg-gray-950 flex items-center justify-center overflow-hidden">
+              <div
+                className={`aspect-square relative flex items-center justify-center overflow-hidden ${
+                  isDark ? 'bg-gray-950' : 'bg-slate-200'
+                }`}
+              >
                 <img
                   src={item.processedUrl || item.previewUrl}
                   alt={item.originalName}
@@ -158,8 +178,12 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
               </div>
 
               {/* Item Info Footer */}
-              <div className="p-1.5 flex items-center justify-between text-[11px] bg-gray-900/90">
-                <span className="truncate max-w-[80px] text-gray-300" title={item.originalName}>
+              <div
+                className={`p-1.5 flex items-center justify-between text-[11px] ${
+                  isDark ? 'bg-gray-900/90 text-gray-300' : 'bg-slate-100/90 text-slate-700'
+                }`}
+              >
+                <span className="truncate max-w-[80px]" title={item.originalName}>
                   {item.originalName}
                 </span>
                 <button
@@ -167,7 +191,9 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                     e.stopPropagation();
                     onRemoveItem(item.id);
                   }}
-                  className="text-gray-500 hover:text-red-400 p-0.5"
+                  className={`p-0.5 hover:text-red-500 ${
+                    isDark ? 'text-gray-500' : 'text-slate-400'
+                  }`}
                   title="Remove image"
                 >
                   <Trash2 className="w-3 h-3" />

@@ -16,6 +16,7 @@ import {
   Download,
   Upload,
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 interface ControlPanelProps {
   options: WatermarkOptions;
@@ -60,6 +61,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   isProcessing,
   fileCount,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const updateText = (partial: Partial<TextWatermarkSettings>) => {
@@ -104,26 +107,56 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     }
   };
 
+  const inputClass = isDark
+    ? 'bg-gray-900 border-gray-700 text-gray-100 focus:outline-none focus:border-indigo-500'
+    : 'bg-white border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs';
+
+  const sectionBoxClass = isDark
+    ? 'p-3 bg-gray-800/50 rounded-lg border border-gray-700/60 space-y-3 mt-2'
+    : 'p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3 mt-2';
+
+  const sliderClass = `w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-indigo-600 ${
+    isDark ? 'bg-gray-700' : 'bg-slate-200'
+  }`;
+
   return (
-    <div className="flex flex-col h-full bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-xl text-gray-200">
-      <div className="p-4 bg-gray-800/80 border-b border-gray-700 flex items-center gap-2">
-        <Sparkles className="w-5 h-5 text-indigo-400" />
-        <h2 className="font-semibold text-base text-gray-100">Watermark Controls</h2>
+    <div
+      className={`flex flex-col h-full rounded-xl overflow-hidden border transition-colors ${
+        isDark
+          ? 'bg-gray-900 border-gray-800 text-gray-200 shadow-xl'
+          : 'bg-white border-slate-200 text-slate-800 shadow-md'
+      }`}
+    >
+      <div
+        className={`p-4 border-b flex items-center gap-2 ${
+          isDark ? 'bg-gray-800/80 border-gray-700' : 'bg-slate-100/80 border-slate-200'
+        }`}
+      >
+        <Sparkles className="w-5 h-5 text-indigo-500" />
+        <h2 className={`font-semibold text-base ${isDark ? 'text-gray-100' : 'text-slate-900'}`}>
+          Watermark Controls
+        </h2>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6 text-sm">
         {/* 1. Mode Selection */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+          <label
+            className={`text-xs font-semibold uppercase tracking-wider ${
+              isDark ? 'text-gray-400' : 'text-slate-500'
+            }`}
+          >
             Watermark Mode
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => onChange({ ...options, mode: 'single' })}
-              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border font-medium text-xs transition-all ${
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border font-medium text-xs transition-all cursor-pointer ${
                 options.mode === 'single'
                   ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
-                  : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+                  : isDark
+                  ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+                  : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
               }`}
             >
               <Square className="w-4 h-4" />
@@ -131,10 +164,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             </button>
             <button
               onClick={() => onChange({ ...options, mode: 'repeated' })}
-              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border font-medium text-xs transition-all ${
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border font-medium text-xs transition-all cursor-pointer ${
                 options.mode === 'repeated'
                   ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
-                  : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+                  : isDark
+                  ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+                  : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
               }`}
             >
               <Repeat className="w-4 h-4" />
@@ -143,9 +178,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
           {(options.mode === 'single' || options.mode === 'repeated') && (
-            <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/60 space-y-3 mt-2">
+            <div className={sectionBoxClass}>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Watermark Position</label>
+                <label
+                  className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                >
+                  Watermark Position
+                </label>
                 <select
                   value={options.repeat?.position || 'center'}
                   onChange={(e) =>
@@ -157,7 +196,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       },
                     })
                   }
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                  className={`w-full rounded-lg px-2 py-1.5 text-xs ${inputClass}`}
                 >
                   {REPEAT_POSITIONS.map((pos) => (
                     <option key={pos.value} value={pos.value}>
@@ -169,7 +208,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
               {options.mode === 'repeated' && (
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Watermark Spacing (px)</label>
+                  <label
+                    className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                  >
+                    Watermark Spacing (px)
+                  </label>
                   <input
                     type="number"
                     min="1"
@@ -210,7 +253,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                         });
                       }
                     }}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                    className={`w-full rounded-lg px-3 py-1.5 text-xs ${inputClass}`}
                   />
                 </div>
               )}
@@ -218,11 +261,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           )}
 
           {options.mode === 'tiled' && (
-            <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/60 space-y-3 mt-2">
+            <div className={sectionBoxClass}>
               <div>
-                <div className="flex justify-between text-xs text-gray-300 mb-1">
+                <div
+                  className={`flex justify-between text-xs mb-1 ${
+                    isDark ? 'text-gray-300' : 'text-slate-700'
+                  }`}
+                >
                   <span>Horizontal Tile Spacing</span>
-                  <span className="font-mono text-indigo-400">{options.tiling.spacingX}px</span>
+                  <span className="font-mono text-indigo-500">{options.tiling.spacingX}px</span>
                 </div>
                 <input
                   type="range"
@@ -235,14 +282,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       tiling: { ...options.tiling, spacingX: Number(e.target.value) },
                     })
                   }
-                  className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  className={sliderClass}
                 />
               </div>
 
               <div>
-                <div className="flex justify-between text-xs text-gray-300 mb-1">
+                <div
+                  className={`flex justify-between text-xs mb-1 ${
+                    isDark ? 'text-gray-300' : 'text-slate-700'
+                  }`}
+                >
                   <span>Vertical Tile Spacing</span>
-                  <span className="font-mono text-indigo-400">{options.tiling.spacingY}px</span>
+                  <span className="font-mono text-indigo-500">{options.tiling.spacingY}px</span>
                 </div>
                 <input
                   type="range"
@@ -255,7 +306,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       tiling: { ...options.tiling, spacingY: Number(e.target.value) },
                     })
                   }
-                  className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  className={sliderClass}
                 />
               </div>
             </div>
@@ -263,10 +314,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
 
         {/* 2. Text Watermark Settings */}
-        <div className="border-t border-gray-800 pt-4 space-y-3">
+        <div className={`border-t pt-4 space-y-3 ${isDark ? 'border-gray-800' : 'border-slate-200'}`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-semibold text-gray-200">
-              <Type className="w-4 h-4 text-indigo-400" />
+            <div
+              className={`flex items-center gap-2 font-semibold ${
+                isDark ? 'text-gray-200' : 'text-slate-800'
+              }`}
+            >
+              <Type className="w-4 h-4 text-indigo-500" />
               <span>Text Watermark</span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -276,30 +331,48 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 onChange={(e) => updateText({ enabled: e.target.checked })}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              <div
+                className={`w-9 h-5 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 ${
+                  isDark ? 'bg-gray-700' : 'bg-slate-300'
+                }`}
+              ></div>
             </label>
           </div>
 
           {options.text.enabled && (
-            <div className="space-y-3 bg-gray-800/40 p-3 rounded-lg border border-gray-800">
+            <div
+              className={`space-y-3 p-3 rounded-lg border ${
+                isDark
+                  ? 'bg-gray-800/40 border-gray-800'
+                  : 'bg-slate-50 border-slate-200'
+              }`}
+            >
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Watermark Text</label>
+                <label
+                  className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                >
+                  Watermark Text
+                </label>
                 <input
                   type="text"
                   value={options.text.text}
                   onChange={(e) => updateText({ text: e.target.value })}
                   placeholder="Enter watermark text..."
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                  className={`w-full rounded-lg px-3 py-1.5 text-xs ${inputClass}`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Font Family</label>
+                  <label
+                    className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                  >
+                    Font Family
+                  </label>
                   <select
                     value={options.text.fontFamily}
                     onChange={(e) => updateText({ fontFamily: e.target.value })}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                    className={`w-full rounded-lg px-2 py-1.5 text-xs ${inputClass}`}
                   >
                     {FONT_FAMILIES.map((font) => (
                       <option key={font.value} value={font.value}>
@@ -310,15 +383,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Weight</label>
+                  <label
+                    className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                  >
+                    Weight
+                  </label>
                   <select
                     value={options.text.fontWeight}
                     onChange={(e) => updateText({ fontWeight: e.target.value })}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                    className={`w-full rounded-lg px-2 py-1.5 text-xs ${inputClass}`}
                   >
                     <option value="300">Light</option>
                     <option value="normal">Normal</option>
-
                     <option value="bold">Bold</option>
                     <option value="900">Black / Ultra</option>
                   </select>
@@ -328,7 +404,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               {/* Size & Color */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
+                  <div
+                    className={`flex justify-between items-center text-xs mb-1 ${
+                      isDark ? 'text-gray-400' : 'text-slate-500'
+                    }`}
+                  >
                     <span>Size</span>
                     <button
                       type="button"
@@ -337,7 +417,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                           fontSizeUnit: options.text.fontSizeUnit === 'px' ? '%' : 'px',
                         })
                       }
-                      className="text-[10px] text-indigo-400 hover:underline"
+                      className="text-[10px] text-indigo-500 hover:underline cursor-pointer"
                     >
                       Unit: {options.text.fontSizeUnit}
                     </button>
@@ -348,18 +428,24 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     max="500"
                     value={options.text.fontSize}
                     onChange={(e) => updateText({ fontSize: Number(e.target.value) })}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                    className={`w-full rounded-lg px-3 py-1.5 text-xs ${inputClass}`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Text Color</label>
+                  <label
+                    className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                  >
+                    Text Color
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={options.text.color}
                       onChange={(e) => updateText({ color: e.target.value })}
-                      className="w-8 h-8 rounded border border-gray-700 bg-transparent cursor-pointer p-0"
+                      className={`w-8 h-8 rounded border bg-transparent cursor-pointer p-0 ${
+                        isDark ? 'border-gray-700' : 'border-slate-300'
+                      }`}
                     />
                     <span className="font-mono text-xs uppercase">{options.text.color}</span>
                   </div>
@@ -368,9 +454,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
               {/* Opacity & Rotation */}
               <div>
-                <div className="flex justify-between text-xs text-gray-300 mb-1">
+                <div
+                  className={`flex justify-between text-xs mb-1 ${
+                    isDark ? 'text-gray-300' : 'text-slate-700'
+                  }`}
+                >
                   <span>Opacity</span>
-                  <span className="font-mono text-indigo-400">
+                  <span className="font-mono text-indigo-500">
                     {Math.round(options.text.opacity * 100)}%
                   </span>
                 </div>
@@ -381,14 +471,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   step="0.05"
                   value={options.text.opacity}
                   onChange={(e) => updateText({ opacity: Number(e.target.value) })}
-                  className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  className={sliderClass}
                 />
               </div>
 
               <div>
-                <div className="flex justify-between text-xs text-gray-300 mb-1">
+                <div
+                  className={`flex justify-between text-xs mb-1 ${
+                    isDark ? 'text-gray-300' : 'text-slate-700'
+                  }`}
+                >
                   <span>Rotation</span>
-                  <span className="font-mono text-indigo-400">{options.text.rotation}°</span>
+                  <span className="font-mono text-indigo-500">{options.text.rotation}°</span>
                 </div>
                 <input
                   type="range"
@@ -396,20 +490,24 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   max="180"
                   value={options.text.rotation}
                   onChange={(e) => updateText({ rotation: Number(e.target.value) })}
-                  className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  className={sliderClass}
                 />
               </div>
 
               {/* Position (Single Mode) */}
               {options.mode === 'single' && (
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Position Preset</label>
+                  <label
+                    className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                  >
+                    Position Preset
+                  </label>
                   <select
                     value={options.text.position}
                     onChange={(e) =>
                       updateText({ position: e.target.value as SinglePosition })
                     }
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                    className={`w-full rounded-lg px-2 py-1.5 text-xs ${inputClass}`}
                   >
                     {POSITIONS.map((pos) => (
                       <option key={pos.value} value={pos.value}>
@@ -421,25 +519,33 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   {options.text.position === 'custom' && (
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       <div>
-                        <span className="text-[10px] text-gray-400">X (%):</span>
+                        <span
+                          className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                        >
+                          X (%):
+                        </span>
                         <input
                           type="number"
                           min="0"
                           max="100"
                           value={options.text.customX}
                           onChange={(e) => updateText({ customX: Number(e.target.value) })}
-                          className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs"
+                          className={`w-full rounded px-2 py-1 text-xs ${inputClass}`}
                         />
                       </div>
                       <div>
-                        <span className="text-[10px] text-gray-400">Y (%):</span>
+                        <span
+                          className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                        >
+                          Y (%):
+                        </span>
                         <input
                           type="number"
                           min="0"
                           max="100"
                           value={options.text.customY}
                           onChange={(e) => updateText({ customY: Number(e.target.value) })}
-                          className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs"
+                          className={`w-full rounded px-2 py-1 text-xs ${inputClass}`}
                         />
                       </div>
                     </div>
@@ -448,14 +554,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               )}
 
               {/* Outline & Shadow options */}
-              <div className="border-t border-gray-700/50 pt-2 space-y-2">
+              <div
+                className={`border-t pt-2 space-y-2 ${
+                  isDark ? 'border-gray-700/50' : 'border-slate-200'
+                }`}
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-300">Text Outline</span>
+                  <span className={`text-xs ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                    Text Outline
+                  </span>
                   <input
                     type="checkbox"
                     checked={options.text.outlineEnabled}
                     onChange={(e) => updateText({ outlineEnabled: e.target.checked })}
-                    className="accent-indigo-500 cursor-pointer"
+                    className="accent-indigo-600 cursor-pointer"
                   />
                 </div>
                 {options.text.outlineEnabled && (
@@ -464,27 +576,35 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       type="color"
                       value={options.text.outlineColor}
                       onChange={(e) => updateText({ outlineColor: e.target.value })}
-                      className="w-6 h-6 rounded border border-gray-700 bg-transparent cursor-pointer p-0"
+                      className={`w-6 h-6 rounded border bg-transparent cursor-pointer p-0 ${
+                        isDark ? 'border-gray-700' : 'border-slate-300'
+                      }`}
                     />
-                    <span className="text-xs text-gray-400">Width:</span>
+                    <span
+                      className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                    >
+                      Width:
+                    </span>
                     <input
                       type="number"
                       min="1"
                       max="20"
                       value={options.text.outlineWidth}
                       onChange={(e) => updateText({ outlineWidth: Number(e.target.value) })}
-                      className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-0.5 text-xs"
+                      className={`w-16 rounded px-2 py-0.5 text-xs ${inputClass}`}
                     />
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-300">Text Shadow</span>
+                  <span className={`text-xs ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                    Text Shadow
+                  </span>
                   <input
                     type="checkbox"
                     checked={options.text.shadowEnabled}
                     onChange={(e) => updateText({ shadowEnabled: e.target.checked })}
-                    className="accent-indigo-500 cursor-pointer"
+                    className="accent-indigo-600 cursor-pointer"
                   />
                 </div>
                 {options.text.shadowEnabled && (
@@ -493,16 +613,22 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       type="color"
                       value={options.text.shadowColor}
                       onChange={(e) => updateText({ shadowColor: e.target.value })}
-                      className="w-6 h-6 rounded border border-gray-700 bg-transparent cursor-pointer p-0"
+                      className={`w-6 h-6 rounded border bg-transparent cursor-pointer p-0 ${
+                        isDark ? 'border-gray-700' : 'border-slate-300'
+                      }`}
                     />
-                    <span className="text-xs text-gray-400">Blur:</span>
+                    <span
+                      className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                    >
+                      Blur:
+                    </span>
                     <input
                       type="number"
                       min="0"
                       max="30"
                       value={options.text.shadowBlur}
                       onChange={(e) => updateText({ shadowBlur: Number(e.target.value) })}
-                      className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-0.5 text-xs"
+                      className={`w-16 rounded px-2 py-0.5 text-xs ${inputClass}`}
                     />
                   </div>
                 )}
@@ -512,10 +638,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
 
         {/* 3. Logo Watermark Settings */}
-        <div className="border-t border-gray-800 pt-4 space-y-3">
+        <div className={`border-t pt-4 space-y-3 ${isDark ? 'border-gray-800' : 'border-slate-200'}`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-semibold text-gray-200">
-              <ImageIcon className="w-4 h-4 text-indigo-400" />
+            <div
+              className={`flex items-center gap-2 font-semibold ${
+                isDark ? 'text-gray-200' : 'text-slate-800'
+              }`}
+            >
+              <ImageIcon className="w-4 h-4 text-indigo-500" />
               <span>Image / Logo Watermark</span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -525,12 +655,22 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 onChange={(e) => updateLogo({ enabled: e.target.checked })}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              <div
+                className={`w-9 h-5 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 ${
+                  isDark ? 'bg-gray-700' : 'bg-slate-300'
+                }`}
+              ></div>
             </label>
           </div>
 
           {options.logo.enabled && (
-            <div className="space-y-3 bg-gray-800/40 p-3 rounded-lg border border-gray-800">
+            <div
+              className={`space-y-3 p-3 rounded-lg border ${
+                isDark
+                  ? 'bg-gray-800/40 border-gray-800'
+                  : 'bg-slate-50 border-slate-200'
+              }`}
+            >
               <input
                 type="file"
                 ref={logoInputRef}
@@ -541,7 +681,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <button
                 type="button"
                 onClick={() => logoInputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 border border-dashed border-gray-700 hover:border-indigo-500 rounded-lg text-xs font-medium text-gray-300 hover:text-indigo-400 bg-gray-900 transition-colors"
+                className={`w-full flex items-center justify-center gap-2 py-2 px-3 border border-dashed rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                  isDark
+                    ? 'border-gray-700 hover:border-indigo-500 text-gray-300 hover:text-indigo-400 bg-gray-900'
+                    : 'border-slate-300 hover:border-indigo-500 text-slate-700 hover:text-indigo-600 bg-white'
+                }`}
               >
                 <Upload className="w-4 h-4" />
                 {options.logo.imageFileName
@@ -552,9 +696,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               {options.logo.imageSrc && (
                 <>
                   <div>
-                    <div className="flex justify-between text-xs text-gray-300 mb-1">
+                    <div
+                      className={`flex justify-between text-xs mb-1 ${
+                        isDark ? 'text-gray-300' : 'text-slate-700'
+                      }`}
+                    >
                       <span>Logo Scale</span>
-                      <span className="font-mono text-indigo-400">{options.logo.scale}%</span>
+                      <span className="font-mono text-indigo-500">{options.logo.scale}%</span>
                     </div>
                     <input
                       type="range"
@@ -562,14 +710,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       max="80"
                       value={options.logo.scale}
                       onChange={(e) => updateLogo({ scale: Number(e.target.value) })}
-                      className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      className={sliderClass}
                     />
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-xs text-gray-300 mb-1">
+                    <div
+                      className={`flex justify-between text-xs mb-1 ${
+                        isDark ? 'text-gray-300' : 'text-slate-700'
+                      }`}
+                    >
                       <span>Opacity</span>
-                      <span className="font-mono text-indigo-400">
+                      <span className="font-mono text-indigo-500">
                         {Math.round(options.logo.opacity * 100)}%
                       </span>
                     </div>
@@ -580,14 +732,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       step="0.05"
                       value={options.logo.opacity}
                       onChange={(e) => updateLogo({ opacity: Number(e.target.value) })}
-                      className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      className={sliderClass}
                     />
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-xs text-gray-300 mb-1">
+                    <div
+                      className={`flex justify-between text-xs mb-1 ${
+                        isDark ? 'text-gray-300' : 'text-slate-700'
+                      }`}
+                    >
                       <span>Rotation</span>
-                      <span className="font-mono text-indigo-400">{options.logo.rotation}°</span>
+                      <span className="font-mono text-indigo-500">{options.logo.rotation}°</span>
                     </div>
                     <input
                       type="range"
@@ -595,19 +751,23 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       max="180"
                       value={options.logo.rotation}
                       onChange={(e) => updateLogo({ rotation: Number(e.target.value) })}
-                      className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      className={sliderClass}
                     />
                   </div>
 
                   {options.mode === 'single' && (
                     <div>
-                      <label className="block text-xs text-gray-400 mb-1">Position Preset</label>
+                      <label
+                        className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+                      >
+                        Position Preset
+                      </label>
                       <select
                         value={options.logo.position}
                         onChange={(e) =>
                           updateLogo({ position: e.target.value as SinglePosition })
                         }
-                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+                        className={`w-full rounded-lg px-2 py-1.5 text-xs ${inputClass}`}
                       >
                         {POSITIONS.map((pos) => (
                           <option key={pos.value} value={pos.value}>
@@ -624,8 +784,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
 
         {/* 4. Export Format Settings */}
-        <div className="border-t border-gray-800 pt-4 space-y-3">
-          <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+        <div className={`border-t pt-4 space-y-3 ${isDark ? 'border-gray-800' : 'border-slate-200'}`}>
+          <label
+            className={`text-xs font-semibold uppercase tracking-wider ${
+              isDark ? 'text-gray-400' : 'text-slate-500'
+            }`}
+          >
             Export Options
           </label>
 
@@ -635,10 +799,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 key={fmt}
                 type="button"
                 onClick={() => updateExport({ format: fmt })}
-                className={`py-1.5 px-2 rounded-lg border text-xs font-semibold uppercase transition-all ${
+                className={`py-1.5 px-2 rounded-lg border text-xs font-semibold uppercase transition-all cursor-pointer ${
                   options.export.format === fmt
-                    ? 'bg-indigo-600 border-indigo-500 text-white shadow'
-                    : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-sm'
+                    : isDark
+                    ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+                    : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 {fmt}
@@ -648,9 +814,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
           {options.export.format !== 'png' && (
             <div>
-              <div className="flex justify-between text-xs text-gray-300 mb-1">
+              <div
+                className={`flex justify-between text-xs mb-1 ${
+                  isDark ? 'text-gray-300' : 'text-slate-700'
+                }`}
+              >
                 <span>Output Quality</span>
-                <span className="font-mono text-indigo-400">
+                <span className="font-mono text-indigo-500">
                   {Math.round(options.export.quality * 100)}%
                 </span>
               </div>
@@ -661,26 +831,34 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 step="0.05"
                 value={options.export.quality}
                 onChange={(e) => updateExport({ quality: Number(e.target.value) })}
-                className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                className={sliderClass}
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Filename Suffix</label>
+            <label
+              className={`block text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}
+            >
+              Filename Suffix
+            </label>
             <input
               type="text"
               value={options.export.filenameSuffix}
               onChange={(e) => updateExport({ filenameSuffix: e.target.value })}
               placeholder="_watermarked"
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-indigo-500"
+              className={`w-full rounded-lg px-3 py-1.5 text-xs ${inputClass}`}
             />
           </div>
         </div>
       </div>
 
       {/* Process Action */}
-      <div className="p-4 bg-gray-800/80 border-t border-gray-800">
+      <div
+        className={`p-4 border-t ${
+          isDark ? 'bg-gray-800/80 border-gray-800' : 'bg-slate-100/80 border-slate-200'
+        }`}
+      >
         <button
           onClick={onApplyBatch}
           disabled={isProcessing || fileCount === 0}

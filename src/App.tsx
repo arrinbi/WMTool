@@ -8,7 +8,8 @@ import { ImagePreview } from './components/ImagePreview';
 import { ControlPanel } from './components/ControlPanel';
 import { BatchManager } from './components/BatchManager';
 import { processWatermarkImage } from './utils/watermark';
-import { Droplet, Layers } from 'lucide-react';
+import { Droplet, Layers, Sun, Moon } from 'lucide-react';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 const DEFAULT_OPTIONS: WatermarkOptions = {
   mode: 'repeated',
@@ -61,7 +62,8 @@ const DEFAULT_OPTIONS: WatermarkOptions = {
   },
 };
 
-export default function App() {
+function AppContent() {
+  const { theme, toggleTheme } = useTheme();
   const [items, setItems] = useState<ProcessedImageItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [options, setOptions] = useState<WatermarkOptions>(DEFAULT_OPTIONS);
@@ -170,40 +172,94 @@ export default function App() {
 
   const selectedItem = items.find((i) => i.id === selectedId) || (items.length > 0 ? items[0] : null);
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-950 text-gray-100 font-sans antialiased">
+    <div
+      className={`min-h-screen flex flex-col font-sans antialiased transition-colors duration-200 ${
+        isDark ? 'bg-gray-950 text-gray-100' : 'bg-slate-50 text-slate-800'
+      }`}
+    >
       {/* Top Navigation Bar */}
-      <header className="border-b border-gray-800 bg-gray-900/90 backdrop-blur sticky top-0 z-20 px-4 py-3 flex items-center justify-between">
+      <header
+        className={`border-b sticky top-0 z-20 px-4 py-3 flex items-center justify-between backdrop-blur transition-colors ${
+          isDark
+            ? 'border-gray-800 bg-gray-900/90 text-white'
+            : 'border-slate-200 bg-white/90 text-slate-900 shadow-sm'
+        }`}
+      >
         <div className="flex items-center gap-2">
           <div className="p-2 bg-indigo-600 rounded-lg shadow-indigo-500/20 shadow-lg text-white">
             <Droplet className="w-5 h-5 fill-current" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-              WMTool <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">v1.0</span>
+            <h1 className="text-lg font-bold tracking-tight flex items-center gap-2">
+              WMTool{' '}
+              <span
+                className={`text-xs font-semibold px-2 py-0.5 rounded border ${
+                  isDark
+                    ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
+                    : 'bg-indigo-50 text-indigo-600 border-indigo-200'
+                }`}
+              >
+                v1.0
+              </span>
             </h1>
-            <p className="text-xs text-gray-400 hidden sm:block">Client-side Batch Image Watermarking Engine</p>
+            <p className={`text-xs hidden sm:block ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+              Client-side Batch Image Watermarking Engine
+            </p>
           </div>
         </div>
 
-        {items.length > 0 && (
-          <div className="flex items-center gap-3">
-            <FileUploader onFilesSelected={handleFilesSelected} compact />
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {items.length > 0 && <FileUploader onFilesSelected={handleFilesSelected} compact />}
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle Theme"
+            title={isDark ? 'Switch to Day Mode' : 'Switch to Dark Mode'}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
+              isDark
+                ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700 hover:text-white'
+                : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 hover:text-slate-900 shadow-sm'
+            }`}
+          >
+            {isDark ? (
+              <>
+                <Sun className="w-4 h-4 text-amber-400" />
+                <span className="hidden sm:inline">Day Mode</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-4 h-4 text-indigo-600" />
+                <span className="hidden sm:inline">Dark Mode</span>
+              </>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Main Workspace Layout */}
       <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto flex flex-col gap-6">
         {items.length === 0 ? (
           <div className="my-auto py-16 flex flex-col items-center justify-center max-w-xl mx-auto text-center space-y-6">
-            <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-400">
+            <div
+              className={`p-4 rounded-2xl border ${
+                isDark
+                  ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+                  : 'bg-indigo-50 border-indigo-200 text-indigo-600'
+              }`}
+            >
               <Layers className="w-12 h-12" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Browser-Based Watermark Editor</h2>
-              <p className="text-sm text-gray-400">
-                Watermark single or multiple PNG, JPEG, and WebP images instantly in your browser. No files are ever uploaded to a server.
+              <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Browser-Based Watermark Editor
+              </h2>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
+                Watermark single or multiple PNG, JPEG, and WebP images instantly in your browser.
+                No files are ever uploaded to a server.
               </p>
             </div>
             <div className="w-full">
@@ -212,7 +268,7 @@ export default function App() {
           </div>
         ) : (
           <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-start">
-            {/* Left/Center: Image Preview & Batch Queue (Cols 7 or 8) */}
+            {/* Left/Center: Image Preview & Batch Queue */}
             <div className="w-full lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
               <div className="h-[500px] lg:h-[600px] w-full">
                 <ImagePreview item={selectedItem} options={options} />
@@ -228,7 +284,7 @@ export default function App() {
               />
             </div>
 
-            {/* Right: Control Panel (Cols 5 or 4) */}
+            {/* Right: Control Panel */}
             <div className="w-full lg:col-span-5 xl:col-span-4 h-full lg:sticky lg:top-20">
               <ControlPanel
                 options={options}
@@ -243,9 +299,23 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800/80 bg-gray-900/50 py-3 px-4 text-center text-xs text-gray-500">
+      <footer
+        className={`border-t py-3 px-4 text-center text-xs transition-colors ${
+          isDark
+            ? 'border-gray-800/80 bg-gray-900/50 text-gray-500'
+            : 'border-slate-200 bg-slate-100/80 text-slate-500'
+        }`}
+      >
         WMTool — Local & Private Browser Watermarking App
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
