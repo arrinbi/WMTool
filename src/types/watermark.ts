@@ -66,6 +66,21 @@ export interface ExportSettings {
   filenameSuffix: string;
 }
 
+export interface FaceBoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  confidence: number;
+}
+
+export interface WatermarkPlacementResult {
+  x: number;
+  y: number;
+  shifted: boolean;
+  warning?: string;
+}
+
 export interface WatermarkOptions {
   mode: WatermarkMode;
   text: TextWatermarkSettings;
@@ -73,6 +88,7 @@ export interface WatermarkOptions {
   repeat?: RepeatSettings;
   tiling: TilingSettings;
   export: ExportSettings;
+  faceProtection?: boolean;
 }
 
 export interface ProcessedImageItem {
@@ -87,4 +103,6 @@ export interface ProcessedImageItem {
   processedName?: string;
   status: 'idle' | 'processing' | 'done' | 'error';
   errorMessage?: string;
+  faces?: FaceBoundingBox[];
+  faceProtectionWarning?: string;
 }
