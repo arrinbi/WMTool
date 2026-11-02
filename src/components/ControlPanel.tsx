@@ -15,6 +15,8 @@ import {
   Sparkles,
   Download,
   Upload,
+  Shield,
+  Loader2,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -23,7 +25,9 @@ interface ControlPanelProps {
   onChange: (options: WatermarkOptions) => void;
   onApplyBatch: () => void;
   isProcessing: boolean;
+  isDetectingFaces?: boolean;
   fileCount: number;
+  placementWarning?: string;
 }
 
 const FONT_FAMILIES = [
@@ -59,7 +63,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onChange,
   onApplyBatch,
   isProcessing,
+  isDetectingFaces = false,
   fileCount,
+  placementWarning,
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -139,6 +145,57 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6 text-sm">
+        {/* Face Protection Setting */}
+        <div className={`p-3 rounded-lg border transition-colors ${
+          isDark
+            ? 'bg-gray-800/40 border-gray-800'
+            : 'bg-slate-50 border-slate-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className={`w-4 h-4 ${options.faceProtection ? 'text-indigo-500' : isDark ? 'text-gray-400' : 'text-slate-500'}`} />
+              <div>
+                <span className={`font-semibold text-xs ${isDark ? 'text-gray-200' : 'text-slate-800'}`}>
+                  Face Protection
+                </span>
+                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                  Avoid placing watermarks over faces
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {isDetectingFaces && (
+                <Loader2 className="w-3.5 h-3.5 text-indigo-500 animate-spin" />
+              )}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!options.faceProtection}
+                  onChange={(e) =>
+                    onChange({
+                      ...options,
+                      faceProtection: e.target.checked,
+                    })
+                  }
+                  className="sr-only peer"
+                />
+                <div
+                  className={`w-9 h-5 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 ${
+                    isDark ? 'bg-gray-700' : 'bg-slate-300'
+                  }`}
+                ></div>
+              </label>
+            </div>
+          </div>
+
+          {placementWarning && options.faceProtection && (
+            <div className="mt-2.5 p-2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs flex items-start gap-1.5 leading-snug">
+              <span>⚠️</span>
+              <span>{placementWarning}</span>
+            </div>
+          )}
+        </div>
+
         {/* 1. Mode Selection */}
         <div className="space-y-2">
           <label

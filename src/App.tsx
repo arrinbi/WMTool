@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   WatermarkOptions,
   ProcessedImageItem,
@@ -8,6 +8,7 @@ import { ImagePreview } from './components/ImagePreview';
 import { ControlPanel } from './components/ControlPanel';
 import { BatchManager } from './components/BatchManager';
 import { processWatermarkImage } from './utils/watermark';
+import { detectFaces, clearDetectionCache } from './utils/faceDetection';
 import { Droplet, Layers, Sun, Moon } from 'lucide-react';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 
@@ -60,6 +61,7 @@ const DEFAULT_OPTIONS: WatermarkOptions = {
     quality: 0.9,
     filenameSuffix: '_wm',
   },
+  faceProtection: false,
 };
 
 function AppContent() {
@@ -68,6 +70,8 @@ function AppContent() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [options, setOptions] = useState<WatermarkOptions>(DEFAULT_OPTIONS);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isDetectingFaces, setIsDetectingFaces] = useState<boolean>(false);
+  const [placementWarning, setPlacementWarning] = useState<string | undefined>(undefined);
 
   const handleFilesSelected = useCallback((files: File[]) => {
     const newItems: ProcessedImageItem[] = files.map((file) => {
@@ -107,6 +111,7 @@ function AppContent() {
       if (target) {
         URL.revokeObjectURL(target.previewUrl);
         if (target.processedUrl) URL.revokeObjectURL(target.processedUrl);
+        clearDetectionCache(target.id);
       }
       const filtered = prev.filter((i) => i.id !== id);
       if (selectedId === id) {
@@ -121,9 +126,42 @@ function AppContent() {
       URL.revokeObjectURL(item.previewUrl);
       if (item.processedUrl) URL.revokeObjectURL(item.processedUrl);
     });
+    clearDetectionCache();
     setItems([]);
     setSelectedId(null);
   }, [items]);
+
+  const selectedItem = items.find((i) => i.id === selectedId) || (items.length > 0 ? items[0] : null);
+
+  // Run face detection on the currently selected item when face protection is enabled
+  useEffect(() => {
+    if (!options.faceProtection || !selectedItem) return;
+    if (selectedItem.faces !== undefined) return; // Already detected
+
+    let isMounted = true;
+    setIsDetectingFaces(true);
+
+    const img = new Image();
+    img.src = selectedItem.previewUrl;
+    img.onload = async () => {
+      try {
+        const faces = await detectFaces(img, selectedItem.id);
+        if (isMounted) {
+          setItems((prev) =>
+            prev.map((it) => (it.id === selectedItem.id ? { ...it, faces } : it))
+          );
+        }
+      } catch (err) {
+        console.warn('Face detection error for preview item:', err);
+      } finally {
+        if (isMounted) setIsDetectingFaces(false);
+      }
+    };
+
+    return () => {
+      isMounted = false;
+    };
+  }, [options.faceProtection, selectedItem?.id, selectedItem?.previewUrl, selectedItem?.faces]);
 
   const handleApplyBatch = async () => {
     if (items.length === 0 || isProcessing) return;
@@ -136,7 +174,11 @@ function AppContent() {
     for (let i = 0; i < items.length; i++) {
       const current = items[i];
       try {
-        const blob = await processWatermarkImage(current.file, options);
+        const { blob, warnings, faces } = await processWatermarkImage(
+          current.file,
+          options,
+          current.faces
+        );
         const processedUrl = URL.createObjectURL(blob);
 
         setItems((prev) =>
@@ -146,6 +188,8 @@ function AppContent() {
                   ...item,
                   processedBlob: blob,
                   processedUrl,
+                  faces: current.faces || faces,
+                  faceProtectionWarning: warnings.length > 0 ? warnings[0] : undefined,
                   status: 'done',
                 }
               : item
@@ -169,8 +213,6 @@ function AppContent() {
 
     setIsProcessing(false);
   };
-
-  const selectedItem = items.find((i) => i.id === selectedId) || (items.length > 0 ? items[0] : null);
 
   const isDark = theme === 'dark';
 
@@ -271,7 +313,11 @@ function AppContent() {
             {/* Left/Center: Image Preview & Batch Queue */}
             <div className="w-full lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
               <div className="h-[500px] lg:h-[600px] w-full">
-                <ImagePreview item={selectedItem} options={options} />
+                <ImagePreview
+                  item={selectedItem}
+                  options={options}
+                  onPlacementWarning={setPlacementWarning}
+                />
               </div>
 
               <BatchManager
@@ -291,7 +337,9 @@ function AppContent() {
                 onChange={setOptions}
                 onApplyBatch={handleApplyBatch}
                 isProcessing={isProcessing}
+                isDetectingFaces={isDetectingFaces}
                 fileCount={items.length}
+                placementWarning={placementWarning}
               />
             </div>
           </div>

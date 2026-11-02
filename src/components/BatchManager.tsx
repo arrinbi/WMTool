@@ -151,8 +151,19 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                     </span>
                   )}
                   {item.status === 'done' && (
-                    <span className="p-1 bg-emerald-950/80 rounded-full text-emerald-400 block">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span
+                      title={item.faceProtectionWarning || 'Done'}
+                      className={`p-1 rounded-full block ${
+                        item.faceProtectionWarning
+                          ? 'bg-amber-950/80 text-amber-400'
+                          : 'bg-emerald-950/80 text-emerald-400'
+                      }`}
+                    >
+                      {item.faceProtectionWarning ? (
+                        <AlertCircle className="w-3.5 h-3.5" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      )}
                     </span>
                   )}
                   {item.status === 'error' && (

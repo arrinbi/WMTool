@@ -8,9 +8,10 @@ import { calculateBoundedPan } from '../utils/pan';
 interface ImagePreviewProps {
   item: ProcessedImageItem | null;
   options: WatermarkOptions;
+  onPlacementWarning?: (warning?: string) => void;
 }
 
-export const ImagePreview: React.FC<ImagePreviewProps> = ({ item, options }) => {
+export const ImagePreview: React.FC<ImagePreviewProps> = ({ item, options, onPlacementWarning }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
@@ -47,8 +48,16 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ item, options }) => 
   // Redraw canvas when image or watermark options update
   useEffect(() => {
     if (!canvasRef.current || !loadedImage) return;
-    applyWatermarkToCanvas(canvasRef.current, loadedImage, options);
-  }, [loadedImage, options]);
+    const { warnings } = applyWatermarkToCanvas(
+      canvasRef.current,
+      loadedImage,
+      options,
+      item?.faces || []
+    );
+    if (onPlacementWarning) {
+      onPlacementWarning(warnings.length > 0 ? warnings[0] : undefined);
+    }
+  }, [loadedImage, options, item?.faces, onPlacementWarning]);
 
   // Handle native wheel zoom (Ctrl + wheel or wheel when zoomed)
   useEffect(() => {
